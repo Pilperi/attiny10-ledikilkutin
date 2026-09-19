@@ -20,10 +20,6 @@
 #define REG_POINT_ZL   R30
 #define REG_POINT_ZH   R31
 
-#define REG_X          X
-#define REG_Y          Y
-#define REG_Z          Z
-
 #define REG_PNT_CNTL   YL
 #define REG_PNT_CNTH   YH
 #define REG_PNT_CNT    Y

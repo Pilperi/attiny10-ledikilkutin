@@ -12,7 +12,7 @@ MEMORY
     0x800000 jolloin tiedetään että kyseessä on oma muistialueensa.
     Muille vastaaville hassumuisteille (EEPROM) on vastaavat offsetit.
      */
-    sram : org = 0x00800060, len = 32
+    sram : org = 0x00800040, len = 32
 }
 
 SECTIONS

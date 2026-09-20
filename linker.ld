@@ -1,4 +1,4 @@
-/* Linkerfile attiny85 */
+/* Linkerfile attiny10 */
 
 MEMORY
 {

@@ -45,7 +45,7 @@
 .section .isr_vector
 .org 0x0000
 ; Interrupt vector
-; Hypätään kustakin interruptista vastaavaan rutiiniin
+; Hypätään interruptista vastaavaan rutiiniin
 rjmp isr_reset        ; RESET
 rjmp isr_int0         ; INT0
 rjmp isr_pcint0       ; PCINT0

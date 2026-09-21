@@ -54,11 +54,7 @@ isr_reset_via_power_init:
     SBI PORTB,PIN_ENABLE                     ; Enable ylös
     SBI DDRB,PIN_ENABLE
     SBI PUEB,PIN_ENABLE
-    RCALL vilkuta
-    LDI REG_DATA1,N_PAINALLUSTA
-    LDI ZL,lo8(data_painallukset)
-    LDI ZH,hi8(data_painallukset)
-    ST Z,REG_DATA1
+    RCALL init_data
     RJMP main
 
 .section .text.isr.isr_reset_via_pin
@@ -76,17 +72,11 @@ isr_reset_lue_painallukset:
 isr_reset_hyppaa_rutiiniin:                  ; Hyppää oikeaan rutiiniin
     DEC REG_ITER1
     BREQ rutiini_1
-    RCALL vilkuta
     DEC REG_ITER1
     BREQ rutiini_2
-    RCALL vilkuta
     DEC REG_ITER1
     RJMP rutiini_nolla                       ; Oletuksena rutiini_nolla
 
-vilkuta:
-    SBI PORTB,PIN_ENABLE
-    SBI PORTB,PIN_ENABLE
-    RET
 
 .section .text.rutiinit_default
 rutiini_nolla_default:

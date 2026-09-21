@@ -1,7 +1,25 @@
-/* Linkerfile attiny10 */
+/* Linkerfile attiny10
+
+Muistirakenne:
+IO   0x0000...0x003F
+SRAM 0x0040...0x005F
+---  0x0060...0x3EFF
+NVM  0x3F00...0x3F01
+---  0x3F02...0x3F3F
+CONF 0x3F40...0x3F41
+---  0x3F42...0x3F7F
+CAL  0x3F80...0x3F81
+---  0x3F82...0x3FBF
+ID   0x3FC0...0x3FC3
+---  0x3FC4...0x3FFF
+PMEM 0x4000...0x43FF
+---  0x4400...0xFFFF
+*/
+start_pmem = 0x4000;
 size_pmem = 1024;
+start_sram = 0x0040;
 size_sram = 32;
-offset_sram = 0x00800040;
+offset_sram = 0x00800000;
 
 
 MEMORY
@@ -16,7 +34,7 @@ MEMORY
     0x800000 jolloin tiedetään että kyseessä on oma muistialueensa.
     Muille vastaaville hassumuisteille (EEPROM) on vastaavat offsetit.
      */
-    sram : org = offset_sram, len = size_sram
+    sram : org = (offset_sram + start_sram), len = size_sram
 }
 
 SECTIONS
@@ -34,7 +52,7 @@ SECTIONS
     /* sram_XXX_start    : osoite SRAM-puolella */
         /* Vakiot */
         .rodata : {
-            pmem_rodata_start_la = LOADADDR(.rodata);
+            pmem_rodata_start_la = LOADADDR(.rodata)+start_pmem;
             sram_rodata_start = .;
 	        *.o(.rodata);
             *.o(.rodata*);
@@ -42,7 +60,7 @@ SECTIONS
             } >sram AT >program_memory
         /* Alustetut muuttujat */
         .data : {
-            pmem_data_start_la = LOADADDR(.data);
+            pmem_data_start_la = LOADADDR(.data)+start_pmem;
 	        sram_data_start = .;
             *.o(.data);
             *.o(.data*);
@@ -54,6 +72,6 @@ SECTIONS
             *.o(.bss);
             *.o(.bss*);
             sram_bss_end = .;
-            sram_bss_end_la = LOADADDR(.rodata)+size_sram;
+            sram_bss_end_la = LOADADDR(.rodata)+ start_pmem + size_sram;
             } >sram
 }

@@ -9,7 +9,7 @@
 #define PIN_RESET  PINB3
 
 #define PIN_NAPPI  PIN_INT0
-#define PIN_ENABLE PINB1
+#define PIN_ENABLE PINB2
 
 #define PIN_PUNA       PINB0
 #define PIN_SINI       PINB1

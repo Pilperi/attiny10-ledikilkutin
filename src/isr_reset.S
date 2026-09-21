@@ -20,6 +20,7 @@
 .global main
 .global isr_reset
 .global data_painallukset
+.global isr_reset_via_power_init
 
 ; Oletusrutiinit, korvaa oikeilla
 .weak rutiini_nolla
@@ -34,7 +35,10 @@ isr_reset:                                   ; ISR virrat ylös tai RESET
     CLI
     LDI REG_ZERO,0x00
     LDI REG_MOLEMMAT,PIN_MOLEMMAT
-    OUT DDRB,REG_MOLEMMAT
+    LDI REG_TMP1,PIN_MOLEMMAT|PIN_ENABLE
+    OUT DDRB,REG_TMP1
+    LDI REG_TMP1,(1<<SE)                     ; Sallitaan sleep
+    OUT SMCR,REG_TMP1
 isr_reset_check_source:
     IN REG_TMP1,RSTFLR
     SBRS REG_TMP1,PORF                       ; Lue power-resetin flagi
@@ -46,7 +50,15 @@ isr_reset_via_power:                         ; Reset kun virrat menee päälle
     LDI REG_TMP1,(1<<PORF)                   ; Nollaa poweriflagi
     ANDI REG_TMP1,~(1<<PORF)
     OUT RSTFLR,REG_TMP1
-    RCALL init_data
+isr_reset_via_power_init:
+    SBI PORTB,PIN_ENABLE                     ; Enable ylös
+    SBI DDRB,PIN_ENABLE
+    SBI PUEB,PIN_ENABLE
+    RCALL vilkuta
+    LDI REG_DATA1,N_PAINALLUSTA
+    LDI ZL,lo8(data_painallukset)
+    LDI ZH,hi8(data_painallukset)
+    ST Z,REG_DATA1
     RJMP main
 
 .section .text.isr.isr_reset_via_pin
@@ -64,10 +76,17 @@ isr_reset_lue_painallukset:
 isr_reset_hyppaa_rutiiniin:                  ; Hyppää oikeaan rutiiniin
     DEC REG_ITER1
     BREQ rutiini_1
+    RCALL vilkuta
     DEC REG_ITER1
     BREQ rutiini_2
+    RCALL vilkuta
     DEC REG_ITER1
     RJMP rutiini_nolla                       ; Oletuksena rutiini_nolla
+
+vilkuta:
+    SBI PORTB,PIN_ENABLE
+    SBI PORTB,PIN_ENABLE
+    RET
 
 .section .text.rutiinit_default
 rutiini_nolla_default:

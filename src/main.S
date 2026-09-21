@@ -11,8 +11,6 @@
 main:
     CLI
 main_init:
-    LDI REG_TMP1,(1<<SE)
-    OUT SMCR,REG_TMP1                        ; Sallii sleep
     CBI ACSR,ACIE                            ; Analog comp interrupt disable
     LDI REG_TMP1,(1<<ACD)
     OUT ACSR,REG_TMP1                        ; Analog comp disable

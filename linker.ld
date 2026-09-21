@@ -1,9 +1,13 @@
 /* Linkerfile attiny10 */
+size_pmem = 1024;
+size_sram = 32;
+offset_sram = 0x00800040;
+
 
 MEMORY
 {
     /* Ohjelmamuisti ainoa johon voidaan kirjoittaa */
-    program_memory : org = 0x0000, len = 1024
+    program_memory : org = 0x0000, len = size_pmem
     /*
     SRAM hoidettu virtuaalisen offsetin kautta, laitteessa alkaa 0x0060.
     Vaikkei voida ohjelmoidessa kirjoittaa dataa, voidaan silti allokoida
@@ -12,7 +16,7 @@ MEMORY
     0x800000 jolloin tiedetään että kyseessä on oma muistialueensa.
     Muille vastaaville hassumuisteille (EEPROM) on vastaavat offsetit.
      */
-    sram : org = 0x00800040, len = 32
+    sram : org = offset_sram, len = size_sram
 }
 
 SECTIONS
@@ -50,5 +54,6 @@ SECTIONS
             *.o(.bss);
             *.o(.bss*);
             sram_bss_end = .;
+            sram_bss_end_la = LOADADDR(.rodata)+size_sram;
             } >sram
 }

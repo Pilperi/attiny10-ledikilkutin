@@ -148,7 +148,7 @@ list:
 # Näytä mitä tuli
 show: list
 	test -f $(KOHDE_ELF) && (echo; echo ELF; avr-objdump -D -s $(KOHDE_ELF))
-	test -f $(KOHDEBIN) && (echo; echo BIN; od -A x --endian=big -t x1 $(KOHDEBIN))
+	test -f $(KOHDEBIN) && (echo; echo BIN; od -A x -w16 --endian=big -t x1 $(KOHDEBIN))
 
 # Lähetä avrdudella laitteelle
 send: $(KOHDEBIN)
@@ -168,7 +168,7 @@ $(KOHDEBIN): $(KOHDE_ELF)
 
 # Linkkaa .o-tiedostot linkkeriskriptillä elffiksi.
 # O_OBJECTS_FROM_C ja O_OBJECTS_FROM_S sovelluskohtaisia.
-$(KOHDE_ELF): $(O_OBJECTS_FROM_C) $(O_OBJECTS_FROM_S) $(LIBS)
+$(KOHDE_ELF): $(O_OBJECTS_FROM_C) $(O_OBJECTS_FROM_S) $(LIBS) $(LINKERSCRIPT)
 	@echo Link ELF
 	@echo O_OBJECTS_FROM_C $(O_OBJECTS_FROM_C)
 	@echo O_OBJECTS_FROM_S $(O_OBJECTS_FROM_S)
@@ -182,6 +182,9 @@ $(O_OBJECTS_FROM_S): $(S_OBJECTS)
 	@echo 
 	@echo S_OBJECTS $(S_OBJECTS)
 	test "$@" != "" && cp $(patsubst %.o,%.S.o,$@) $@
+
+# C-koodissa pitää ottaa huomioon myös headerien muutos
+%.c: %.h
 
 # Käännä kaikki .c-tiedostot .c.o-tiedostoiksi
 $(C_OBJECTS): $(C_SOURCES)

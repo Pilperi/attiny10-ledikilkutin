@@ -1,5 +1,7 @@
-.tmp
+*.tmp
 *.hex
 *.obj
+*.bin
+*.elf
 /.vscode
 build_artifacts/

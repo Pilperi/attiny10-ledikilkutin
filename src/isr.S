@@ -14,6 +14,7 @@
 .weak isr_reset
 .weak isr_int0
 .weak isr_pcint0
+.weak isr_timer0_capt
 .weak isr_timer0_ovf
 .weak isr_ana_comp
 .weak isr_timer0_compa
@@ -26,9 +27,9 @@
 .set isr_pcint0,isr_default
 .set isr_timer0_capt,isr_default
 .set isr_timer0_ovf,isr_default
-.set isr_ana_comp,isr_default
 .set isr_timer0_compa,isr_default
 .set isr_timer0_compb,isr_default
+.set isr_ana_comp,isr_default
 .set isr_wdt,isr_default
 .set isr_vlm,isr_default
 .set isr_adc,isr_default

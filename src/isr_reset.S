@@ -16,19 +16,13 @@
 #include "init.h"
 #include "pinnit.h"
 #include "rekisterit.h"
+#include "rutiinit.h"
 
 .global main
 .global isr_reset
 .global data_painallukset
 .global isr_reset_via_power_init
 
-; Oletusrutiinit, korvaa oikeilla
-.weak rutiini_nolla
-.set rutiini_nolla,rutiini_nolla_default
-.weak rutiini_1
-.set rutiini_1,rutiini_1_default
-.weak rutiini_2
-.set rutiini_2,rutiini_2_default
 
 .section .text.isr.isr_reset
 isr_reset:                                   ; ISR virrat ylös tai RESET
@@ -36,7 +30,7 @@ isr_reset:                                   ; ISR virrat ylös tai RESET
     LDI REG_ZERO,0x00
     LDI REG_MOLEMMAT,PIN_MOLEMMAT
     LDI REG_TMP1,PIN_MOLEMMAT|PIN_ENABLE
-    OUT DDRB,REG_TMP1
+    OUT DDRB,REG_TMP1                        ; Kaikki ulostuloja
     LDI REG_TMP1,(1<<SE)                     ; Sallitaan sleep
     OUT SMCR,REG_TMP1
 isr_reset_check_source:
@@ -76,11 +70,3 @@ isr_reset_hyppaa_rutiiniin:                  ; Hyppää oikeaan rutiiniin
     BREQ rutiini_2
     DEC REG_ITER1
     RJMP rutiini_nolla                       ; Oletuksena rutiini_nolla
-
-
-.section .text.rutiinit_default
-rutiini_nolla_default:
-RJMP isr_reset_via_power
-rutiini_1_default:
-rutiini_2_default:
-RJMP main

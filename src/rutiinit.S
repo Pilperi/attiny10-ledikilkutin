@@ -30,7 +30,9 @@ rutiini_nolla:
 rutiini_set:
     OUT PORTB,REG_TMP1
     OUT DDRB,REG_TMP1
+    OUT PUEB,REG_TMP1
     CPSE REG_TMP1,REG_ZERO
     RJMP main
-rutiini_nolla_loop:
-    RJMP isr_reset_via_power_init
+rutiini_nolla_loop:                          ; Ikuinen loop
+    SLEEP
+    RJMP rutiini_nolla_loop

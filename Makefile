@@ -76,7 +76,7 @@ S_OBJECTS := $(addprefix $(KOHDEKANSIO)/,$(S_FILENAMES:%.S=%.S.o))
 O_OBJECTS_FROM_S_FILENAMES := $(filter-out $(C_FILENAMES:%.c=%.o),$(S_FILENAMES:%.S=%.o))
 
 # Erikseen speksattu olemaan assembly-koodista:
-O_OBJECTS_FROM_S_FILENAMES += main.o # esim. testailukoodi assemblyllä
+O_OBJECTS_FROM_S_FILENAMES += main.o
 
 # Poista C-tiedostojen listasta asiat jotka speksattu olemaan assemblyversioita
 # ja assembly-listasta asiat jotka speksaamatta assemblyversioiksi.

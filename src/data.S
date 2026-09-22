@@ -4,7 +4,7 @@
 ; 32 tavua, kirjataan kaikki samassa.
 
 #define __SFR_OFFSET 0
-#include "isr_reset.h"
+#include "data.h"
 
 .global data_painallukset
 .global data_sini_1

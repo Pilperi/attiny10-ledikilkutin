@@ -1,7 +1,13 @@
 *.tmp
+/.vscode
+
+# Käännetyt binäärit ymv
+build_artifacts/
 *.hex
 *.obj
 *.bin
 *.elf
-/.vscode
-build_artifacts/
+
+# PCB-designiin liittyvät turhakkeet
+PCB/*
+!PCB/**/*.pdf

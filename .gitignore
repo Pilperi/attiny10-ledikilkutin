@@ -11,3 +11,4 @@ build_artifacts/
 # PCB-designiin liittyvät turhakkeet
 PCB/*
 !PCB/**/*.pdf
+!PCB/**/*.zip

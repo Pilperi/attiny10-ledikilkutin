@@ -2,6 +2,7 @@
 #define DATA_H
 
 // Montako painallusta ennen kuin sammuu
-#define N_PAINALLUSTA 3
+#define DATA_N_PAINALLUSTA 3
+#define DATA_SIN_PITUUS 28
 
 #endif // DATA_H

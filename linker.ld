@@ -62,8 +62,8 @@ SECTIONS
         .data : {
             pmem_data_start_la = LOADADDR(.data)+start_pmem;
 	        sram_data_start = .;
-            *.o(.data);
-            *.o(.data*);
+            KEEP(*.o(.data));
+            KEEP(*.o(.data*));
             sram_data_end = .;
             } >sram AT >program_memory
         /* Alustamattomat muuttujat, ei tarvita program_memory-osoitetta */

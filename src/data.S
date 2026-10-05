@@ -9,7 +9,7 @@
 .global data_painallukset
 .global data_sini_kohta
 .global data_taajuus
-.global data_sin
+.global data_siniaalto
 
 .section .data.painallukset                  ; RESET-interruptien määrä
 data_painallukset: .byte DATA_N_PAINALLUSTA

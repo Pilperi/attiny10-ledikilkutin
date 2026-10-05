@@ -19,10 +19,10 @@ init_data:
     ; voidaan kirjoittaa yhdessä pötkössä:
     ; aloitetaan rodata alusta
     ; ja lopetetaan data loppuun
-    LDI ZL,lo8(pmem_rodata_start_la)         ; Lukuosoite
-    LDI ZH,hi8(pmem_rodata_start_la)
-    LDI YL,lo8(sram_rodata_start)            ; Kirjoitusosoite
-    LDI YH,hi8(sram_rodata_start)
+    LDI ZL,lo8(pmem_data_start_la)         ; Lukuosoite
+    LDI ZH,hi8(pmem_data_start_la)
+    LDI YL,lo8(sram_data_start)            ; Kirjoitusosoite
+    LDI YH,hi8(sram_data_start)
     LDI XL,lo8(sram_data_end)                ; Kirjoituksen lopetusosoite
     LDI XH,hi8(sram_data_end)
     RJMP init_data_siirto_loop_check

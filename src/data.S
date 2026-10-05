@@ -12,20 +12,21 @@
 .global data_sin
 
 .section .data.painallukset                  ; RESET-interruptien määrä
-data_painallukset: .byte DATA_N_PAINALLUSTA  ; 1 tavu, 31 jäljellä
+data_painallukset: .byte DATA_N_PAINALLUSTA
 
-.section .data.sini_kohta                    ; Paikka siniaallossa
-data_sini_kohta: .byte 0                     ; 1 tavu, 30 jäljellä
+.section .bss.sini_kohta                     ; Paikka siniaallossa
+data_sini_kohta: .byte 0
 
-.section .data.sini_askelkoko                ; Sinin taajuus
-data_taajuus: .byte 0                        ; 1 tavu, 29 jäljellä
+.section .bss.taajuus                        ; Sinin taajuus
+data_taajuus: .byte 0
 
-.section .data.siniaalto                     ; Siniaallon arvot
-data_sin:                                    ; 28 tavua, 1 jäljellä
-    .byte 132,159,185,208
-    .byte 228,242,251,255
-    .byte 251,242,228,208
-    .byte 185,159,132,105
-    .byte  79, 56, 36, 22
-    .byte  13, 10, 13, 22
-    .byte  36, 56, 79,105
+.section .rodata.siniaalto                   ; Siniaallon arvot 32 tavua
+data_siniaalto:
+    .byte 132, 156, 179, 200
+    .byte 219, 234, 245, 252
+    .byte 255, 252, 245, 234
+    .byte 219, 200, 179, 156
+    .byte 132, 108,  85,  64
+    .byte  45,  30,  19,  12
+    .byte  10,  12,  19,  30
+    .byte  45,  64,  85, 108

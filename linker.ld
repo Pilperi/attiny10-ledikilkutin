@@ -47,18 +47,18 @@ SECTIONS
             *.o(.text.init*);        /* Init-rutiini lähellä */
             *.o(.text*);            /* Kaikki muu suoritettava koodi */
         } >program_memory
-	/* Datalohko, kopioidaan SRAM puolelle */
+	/* Datalohkot */
     /* pmem_XXX_start_la : osoite program_memory-puolella */
     /* sram_XXX_start    : osoite SRAM-puolella */
-        /* Vakiot */
+        /* Vakiot pidetään koodin puolella:
+           ATtiny10 samaa rautaa, SRAM huomattavasti rajatumpi
+           niin pidetään siellä jutut jotka saattaa jopa muuttua. */
         .rodata : {
             pmem_rodata_start_la = LOADADDR(.rodata)+start_pmem;
-            sram_rodata_start = .;
-	        *.o(.rodata);
-            *.o(.rodata*);
-            sram_rodata_end = .;
-            } >sram AT >program_memory
-        /* Alustetut muuttujat */
+	        KEEP(*.o(.rodata));
+            KEEP(*.o(.rodata*));
+            } >program_memory
+        /* Alustetut muuttujat kopioidaan SRAM-puolelle */
         .data : {
             pmem_data_start_la = LOADADDR(.data)+start_pmem;
 	        sram_data_start = .;
@@ -66,7 +66,7 @@ SECTIONS
             KEEP(*.o(.data*));
             sram_data_end = .;
             } >sram AT >program_memory
-        /* Alustamattomat muuttujat, ei tarvita program_memory-osoitetta */
+        /* Alustamattomat muuttujat, varataan tila SRAM-puolelta muttei PRAM */
         .bss : {
 	        sram_bss_start = .;
             *.o(.bss);

@@ -21,6 +21,15 @@ SHELL=/bin/bash
 # Kohteen suoritinarkkitehtuuri
 MMCU=attiny10
 TARGET_ARCH=avrtiny
+# Käytettävissä oleva muisti, 4/5 512 tavua, 9/10 1024 tavua
+ifeq ($(MMCU),attiny4)
+ARCH_SIZE=512
+else ifeq ($(MMCU),attiny5)
+ARCH_SIZE=512
+else
+ARCH_SIZE=1024
+endif
+
 
 # Lähdekoodikansio
 KOODIKANSIO=src
@@ -147,8 +156,9 @@ list:
 
 # Näytä mitä tuli
 show: list
-	test -f $(KOHDE_ELF) && (echo; echo ELF; avr-objdump -D -s $(KOHDE_ELF))
-	test -f $(KOHDEBIN) && (echo; echo BIN; od -A x -w16 --endian=big -t x1 $(KOHDEBIN))
+	@test -f $(KOHDE_ELF) && (echo; echo ELF; avr-objdump -D -s $(KOHDE_ELF))
+	@test -f $(KOHDEBIN) && (echo; stat -c %.19y $(KOHDEBIN); echo BIN $(KOHDEBIN); od -A x -w16 --endian=big -t x1 $(KOHDEBIN))
+	@echo; stat -c "%s/$(ARCH_SIZE) tavua" $(KOHDEBIN)
 
 # Lähetä avrdudella laitteelle
 send: $(KOHDEBIN)

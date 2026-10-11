@@ -14,12 +14,6 @@
 .section .data.painallukset                  ; RESET-interruptien määrä
 data_painallukset: .byte DATA_N_PAINALLUSTA
 
-.section .bss.sini_kohta                     ; Paikka siniaallossa
-data_sini_kohta: .byte 0
-
-.section .bss.taajuus                        ; Sinin taajuus
-data_taajuus: .byte 0
-
 .section .rodata.siniaalto                   ; Siniaallon arvot 32 tavua
 data_siniaalto:
     .byte 132, 156, 179, 200
@@ -30,3 +24,10 @@ data_siniaalto:
     .byte  45,  30,  19,  12
     .byte  10,  12,  19,  30
     .byte  45,  64,  85, 108
+data_siniaalto_end:
+
+.section .data.sini_kohta                    ; Paikka siniaallossa (osoite)
+data_sini_kohta: .word data_siniaalto
+
+.section .bss.taajuus                        ; Sinin taajuus
+data_taajuus: .byte 0

@@ -3,13 +3,13 @@
 
 #include <avr/io.h>
 
-#define REG_ZERO       R16
-#define REG_TMP1       R17
-#define REG_TMP2       R18
-#define REG_TMP3       R19
-#define REG_ITER1      R20
-#define REG_ITER2      R21
-#define REG_ITER3      R22
+#define REG_SCRATCH    R16
+#define REG_ZERO       R17
+#define REG_TMP1       R18
+#define REG_TMP2       R19
+#define REG_TMP3       R20
+#define REG_ITER1      R21
+#define REG_ITER2      R22
 #define REG_DATA1      R23
 #define REG_DATA2      R24
 #define REG_DATA3      R25

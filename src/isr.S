@@ -5,6 +5,7 @@
 */
 #define __SFR_OFFSET 0
 #include <avr/io.h>
+#include "rekisterit.h"
 
 ; Handlerit
 ; .weak heikolle määritykselle ja .set oletusarvolle
@@ -38,9 +39,11 @@
 .weak main
 .set main,isr_default_main
 
-; Datan alustusrutiinit
+; Datan ja pinnien alustusrutiinit
+.weak init_pinnit
+.set init_pinnit,isr_default_init
 .weak init_data
-.set init_data,isr_default_init_data
+.set init_data,isr_default_init
 
 ;===============================================================================
 .section .isr_vector
@@ -68,10 +71,12 @@ rjmp isr_adc          ; ADC
 ; Hyppää main
 .section .text.isr.isr_default_reset
 isr_default_reset:
-    LDI	R26,lo8(RAMEND)
-	OUT	SPL,R26
-	LDI	R26,hi8(RAMEND)
-	OUT	SPH,R26
+    LDI	REG_SCRATCH,lo8(RAMEND)
+	OUT	SPL,REG_SCRATCH
+	LDI	REG_SCRATCH,hi8(RAMEND)
+	OUT	SPH,REG_SCRATCH
+    LDI REG_ZERO,0x00
+    RCALL init_pinnit
     RCALL init_data
     RJMP main
 
@@ -87,7 +92,6 @@ isr_default:
 isr_default_main:
     RJMP isr_default_main
 
-.section .text.init
-.section .text.init.isr_default_init_data
-isr_default_init_data:
+.section .text.init.default_init
+isr_default_init:
     RET

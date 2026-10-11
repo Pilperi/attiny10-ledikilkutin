@@ -61,7 +61,7 @@ isr_reset_lue_painallukset:
     LDI XH,hi8(data_painallukset)
     LD REG_ITER1,X
     DEC REG_ITER1
-    BREQ rutiini_nolla                       ; Viimeisellä painalluksella reset
+    RJMP rutiini_nolla                       ; Viimeisellä painalluksella reset
     ST X,REG_ITER1
 isr_reset_hyppaa_rutiiniin:                  ; Hyppää oikeaan rutiiniin
     DEC REG_ITER1

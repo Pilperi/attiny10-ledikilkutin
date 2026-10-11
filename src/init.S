@@ -1,5 +1,7 @@
 ; INIT-rutiini
 ;
+; Asettaa pinnitilat oikeisiin asentoihin.
+;
 ; Alustaa dataosiot asianmukaisesti:
 ; .rodata esimääritellyt arvot paikalleen
 ; .bss pohjustamattomat muuttujat nollaan
@@ -10,8 +12,18 @@
 #include <avr/io.h>
 #include "init.h"
 #include "rekisterit.h"
+#include "pinnit.h"
 
 .global init_data
+.global init_pinnit
+
+.section .text.init.init_pinnit
+init_pinnit:
+    LDI REG_TMP1,PIN_MASK_ULOSTULO
+    OUT PORTB,REG_ZERO
+    OUT DDRB,REG_TMP1
+    OUT PUEB,REG_TMP1
+    RET
 
 .section .text.init.init_data
 init_data:
@@ -36,8 +48,8 @@ init_data_siirto_loop_check:                 ; Jatka kunnes Y==X
     ; BSS heti data jälkeen, jatketaan
     ; samalla pointterilla BSS loppuun asti
 init_data_sec_bss:                           ; Alustamaton (nollattu) data
-    LDI XL,lo8(sram_bss_end_la)              ; Kirjoituksen lopetusosoite
-    LDI XH,hi8(sram_bss_end_la)
+    LDI XL,lo8(sram_bss_end)                 ; Kirjoituksen lopetusosoite
+    LDI XH,hi8(sram_bss_end)
     RJMP init_bss_fill_loop_check
 init_bss_fill_loop:
     ST Y+,REG_ZERO                           ; Kirjoita SRAM 0x00

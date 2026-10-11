@@ -4,6 +4,9 @@
 // C-koodia varten:
 #ifndef __ASSEMBLER__
 
+// Pinnitilojen init (PORTB,DDRB,PUEB)
+void init_pinnit(void);
+
 // Datan init (.rodata, .bss)
 void init_data(void);
 

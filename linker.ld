@@ -72,6 +72,5 @@ SECTIONS
             *.o(.bss);
             *.o(.bss*);
             sram_bss_end = .;
-            sram_bss_end_la = LOADADDR(.rodata)+ start_pmem + size_sram;
             } >sram
 }

@@ -85,7 +85,7 @@ S_OBJECTS := $(addprefix $(KOHDEKANSIO)/,$(S_FILENAMES:%.S=%.S.o))
 O_OBJECTS_FROM_S_FILENAMES := $(filter-out $(C_FILENAMES:%.c=%.o),$(S_FILENAMES:%.S=%.o))
 
 # Erikseen speksattu olemaan assembly-koodista:
-O_OBJECTS_FROM_S_FILENAMES += main.o
+#O_OBJECTS_FROM_S_FILENAMES += main.o
 
 # Poista C-tiedostojen listasta asiat jotka speksattu olemaan assemblyversioita
 # ja assembly-listasta asiat jotka speksaamatta assemblyversioiksi.
@@ -99,7 +99,7 @@ LIBS =
 ################################################################################
 # Targettien toteutukset
 
-all: $(KOHDEKANSIO) list newbin $(C_OBJECTS) $(S_OBJECTS) $(KOHDEBIN) $(LINKERSCRIPT)
+all: $(KOHDEKANSIO) list newbin $(C_OBJECTS) $(S_OBJECTS) $(KOHDEBIN) $(LINKERSCRIPT) Makefile
 build: all
 
 ################################################################################
@@ -184,11 +184,11 @@ $(KOHDE_ELF): $(O_OBJECTS_FROM_C) $(O_OBJECTS_FROM_S) $(LIBS) $(LINKERSCRIPT)
 	@echo O_OBJECTS_FROM_S $(O_OBJECTS_FROM_S)
 	$(LINKER) $(LINKERFLAGS) -o $(KOHDE_ELF) $(O_OBJECTS_FROM_C) $(O_OBJECTS_FROM_S) $(LIBS)
 
-$(O_OBJECTS_FROM_C): $(C_OBJECTS)
+$(O_OBJECTS_FROM_C): $(C_OBJECTS) Makefile
 	@echo 
 	@echo C_OBJECTS $(C_OBJECTS)
 	test "$@" != "" && cp $(patsubst %.o,%.c.o,$@) $@
-$(O_OBJECTS_FROM_S): $(S_OBJECTS)
+$(O_OBJECTS_FROM_S): $(S_OBJECTS) Makefile
 	@echo 
 	@echo S_OBJECTS $(S_OBJECTS)
 	test "$@" != "" && cp $(patsubst %.o,%.S.o,$@) $@

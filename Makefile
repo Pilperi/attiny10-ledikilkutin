@@ -42,6 +42,8 @@ KOHDE_ELF=$(KOHDEKANSIO)/ulos.elf
 # Koodissa kiinnitetyt rekisterit (käyttö globaaleina muuttujina)
 FIXREG :=
 
+# Kirjastot jotka otetaan mukaan
+LIBS = 
 
 # Assemblyn kääntäjä ja sen vaatimat argumentit (suorittimen tyyppi ymv)
 # !! avr-as on olemassa mutta se tekee jotain ihan muuta älä käytä
@@ -85,15 +87,13 @@ S_OBJECTS := $(addprefix $(KOHDEKANSIO)/,$(S_FILENAMES:%.S=%.S.o))
 O_OBJECTS_FROM_S_FILENAMES := $(filter-out $(C_FILENAMES:%.c=%.o),$(S_FILENAMES:%.S=%.o))
 
 # Erikseen speksattu olemaan assembly-koodista:
-#O_OBJECTS_FROM_S_FILENAMES += main.o
+O_OBJECTS_FROM_S_FILENAMES += main.o
 
 # Poista C-tiedostojen listasta asiat jotka speksattu olemaan assemblyversioita
 # ja assembly-listasta asiat jotka speksaamatta assemblyversioiksi.
 O_OBJECTS_FROM_C = $(addprefix $(KOHDEKANSIO)/,$(filter-out $(O_OBJECTS_FROM_S_FILENAMES),$(C_FILENAMES:%.c=%.o)))
 O_OBJECTS_FROM_S = $(addprefix $(KOHDEKANSIO)/,$(O_OBJECTS_FROM_S_FILENAMES))
 
-# Kirjastot jotka otetaan mukaan
-LIBS = 
 
 
 ################################################################################
@@ -193,8 +193,9 @@ $(O_OBJECTS_FROM_S): $(S_OBJECTS) Makefile
 	@echo S_OBJECTS $(S_OBJECTS)
 	test "$@" != "" && cp $(patsubst %.o,%.S.o,$@) $@
 
-# C-koodissa pitää ottaa huomioon myös headerien muutos
+# Pitää ottaa huomioon myös headerien muutos
 %.c: %.h
+%.S: %.h
 
 # Käännä kaikki .c-tiedostot .c.o-tiedostoiksi
 $(C_OBJECTS): $(C_SOURCES)

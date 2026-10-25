@@ -5,8 +5,15 @@
 #define OFFSET_PMEM 0x4000
 #define OFFSET_SRAM 0x0000
 
+#define pmem_lo(addr) lo8(addr + OFFSET_PMEM)
+#define pmem_hi(addr) hi8(addr + OFFSET_PMEM)
+#define fpointer_lo(addr) lo8(gs(addr + OFFSET_PMEM))
+#define fpointer_hi(addr) hi8(gs(addr + OFFSET_PMEM))
+#define sram_lo(addr) lo8(addr + OFFSET_SRAM)
+#define sram_hi(addr) hi8(addr + OFFSET_SRAM)
+
 // Montako painallusta ennen kuin sammuu
-#define DATA_N_PAINALLUSTA 3
+#define DATA_N_PAINALLUSTA 4
 
 // C-koodi
 #ifndef __ASSEMBLER__

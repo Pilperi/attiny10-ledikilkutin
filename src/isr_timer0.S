@@ -12,8 +12,19 @@
 
 .section .text.isr.isr_timer0_ovf
 isr_timer0_ovf:
-    PUSH REG_DATA1
-    RCALL data_lue_siniaalto
-    OUT OCR0AL,REG_DATA1
-    POP REG_DATA1
+    CLI
+    PUSH ZL
+    PUSH ZH
+    PUSH REG_SCRATCH
+    IN REG_SCRATCH,SREG
+    PUSH REG_SCRATCH
+    LDS ZL,(data_addr_rutiini)
+    LDS ZH,(data_addr_rutiini + 1)
+    ICALL
+_isr_timer0_ovf_valmis:
+    POP REG_SCRATCH
+    OUT SREG,REG_SCRATCH
+    POP REG_SCRATCH
+    POP ZH
+    POP ZL
     RETI

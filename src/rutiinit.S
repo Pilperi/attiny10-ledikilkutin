@@ -6,6 +6,10 @@
 ;
 ; Pinnit on pistetty oikeaan asentoon jo init-puolella.
 ;
+; Rutiinialustusten tulee olla aika lähellä ISR-vektoria,
+; muuten ei nappi-resetin BREQ-hyppy yllä rutiinin alustusfunktioon asti:
+; BREQ kantaa vain +/- 64 sanaa kutsukohtaan nähden, vrt. RJMP +/- 2k
+;
 ; Eri tilat joihin laite menee resetillä:
 ; Rutiini 0:
 ;    Katkaise virrat (viimeinen tila)
@@ -42,14 +46,14 @@
 ; Rutiinien alustusfunktiot
 
 ; Rutiini 4: täydet tehot valkoisella, ei kelloja tmv
-.section .text.rutiinit.rutiini_4_alustus
+.section .text.isr.rutiinit.rutiini_4_alustus
 rutiini_4_alustus:
     SBI PORTB,PIN_LED_2
     LDI XL,fpointer_lo(rutiini_4)
     LDI XH,fpointer_hi(rutiini_4)
     RJMP rutiini_common
 
-.section .text.rutiinit.rutiini_3_alustus
+.section .text.isr.rutiinit.rutiini_3_alustus
 ; Rutiini 3: Himmeät tehot valkoisella
 ;.section .text.rutiinit.rutiini_3_alustus
 rutiini_3_alustus:
@@ -63,7 +67,7 @@ rutiini_3_alustus:
     RJMP rutiini_common
 
 ; Rutiini 2: Himmeät tehot sinisellä
-.section .text.rutiinit.rutiini_2_alustus
+.section .text.isr.rutiinit.rutiini_2_alustus
 rutiini_2_alustus:
     LDI REG_DATA1,TIMER0_SININEN_OCR
     LDI REG_DATA2,TIMER0_SININEN_TIMSK
@@ -75,7 +79,7 @@ rutiini_2_alustus:
     RJMP rutiini_common
 
 ; Rutiini 1: Aaltoilevat tehot valkoisella ja sinisellä
-.section .text.rutiinit.rutiini_1_alustus
+.section .text.isr.rutiinit.rutiini_1_alustus
 rutiini_1_alustus:
     LDI REG_TAAJUUS,TIMER0_AALTO_TAAJUUS
     STS (data_taajuus),REG_TAAJUUS
@@ -90,7 +94,7 @@ rutiini_1_alustus:
 
 
 ; Yhteinen osa rutiineille: asetetaan kutsupointterin arvo SRAM ja hypätään main
-.section .text.rutiinit.rutiini_common
+.section .text.isr.rutiinit.rutiini_common
 rutiini_common:
     STS (data_addr_rutiini),XL
     STS (data_addr_rutiini + 1),XH

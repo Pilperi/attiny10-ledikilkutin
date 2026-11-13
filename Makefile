@@ -1,11 +1,10 @@
-# 2026-08-04
+# 2026-11-11
 
 ################################################################################
 # Targetit
 
 .PHONY: all
 .PHONY: build
-.PHONY: newbin
 .PHONY: clean
 .PHONY: clear
 .PHONY: show
@@ -14,13 +13,58 @@
 
 
 ################################################################################
-# Perusmääritykset: kohdekansiot, käännösflagit ymv
+# Perusmääritykset
 
 SHELL=/bin/bash
 
 # Kohteen suoritinarkkitehtuuri
 MMCU=attiny10
 TARGET_ARCH=avrtiny
+
+# Lähdekoodikansio
+KOODIKANSIO=src
+
+# Tulokset
+KOHDEKANSIO=build_artifacts
+KOHDEBIN=$(KOHDEKANSIO)/ulos.bin
+KOHDE_ELF=$(KOHDEKANSIO)/ulos.elf
+
+
+################################################################################
+# Kääntäjä, linkkeri ymv työkalut
+
+# Kirjastot jotka otetaan mukaan
+LIBS :=
+
+# C-kääntäjä ja sen vaatimat argumentit
+COMP_CC=avr-gcc
+COMPFLAGS_C:=-mmcu=$(MMCU) -Os -c -MMD -MP -I lib -I include/**
+
+# Assemblyn kääntäjä ja argumentit (sama avr-gcc)
+COMP_AS=avr-gcc
+COMPFLAGS_AS=-mmcu=$(MMCU) -Os -c -MMD -MP -I lib -I include/**
+
+
+# Binäärin pyörittely eri muodoissa (elf -> bin)
+BINCOPY=avr-objcopy
+BINFLAGS=-g -O binary
+
+# Linkkeri ja linkkeriskripti
+LINKER=avr-ld
+LINKERSCRIPT=linker.ld
+LINKERFLAGS=-T $(LINKERSCRIPT) -m $(TARGET_ARCH) -gc-sections
+
+
+################################################################################
+# Rauta-arkkitehtuuri
+
+# Koodissa kiinnitetyt rekisterit
+# (estä C-kääntäjää sörkkimästä, esim. nopeat globaalit muuttujat)
+FIXREG :=
+ifeq ($(FIXREG),)
+COMPFLAGS_C+=$(addprefix -ffixed-,$(FIXREG))
+endif
+
 # Käytettävissä oleva muisti, 4/5 512 tavua, 9/10 1024 tavua
 ifeq ($(MMCU),attiny4)
 ARCH_SIZE=512
@@ -31,134 +75,53 @@ ARCH_SIZE=1024
 endif
 
 
-# Lähdekoodikansio
-KOODIKANSIO=src
-
-# Käännöksen tulokset
-KOHDEKANSIO=build_artifacts
-KOHDEBIN=$(KOHDEKANSIO)/ulos.bin
-KOHDE_ELF=$(KOHDEKANSIO)/ulos.elf
-
-# Koodissa kiinnitetyt rekisterit (käyttö globaaleina muuttujina)
-FIXREG :=
-
-# Kirjastot jotka otetaan mukaan
-LIBS = 
-
-# Assemblyn kääntäjä ja sen vaatimat argumentit (suorittimen tyyppi ymv)
-# !! avr-as on olemassa mutta se tekee jotain ihan muuta älä käytä
-COMP_AS=avr-gcc
-COMPFLAGS_AS=-mmcu=$(MMCU) -Os -c -I lib -I include/**
-# C-kääntäjä ja sen vaatimat argumentit
-COMP_CC=avr-gcc
-COMPFLAGS_C:=-mmcu=$(MMCU) -Os -c -I lib -I include/**
-ifeq ($(FIXREG),)
-COMPFLAGS_C+=$(addprefix -ffixed-,$(FIXREG))
-endif
-
-# Binäärin pyörittely eri muodoissa (elf -> bin)
-BINCOPY=avr-objcopy
-BINFLAGS=-g -O binary
-
-# Linkkeri ja linkkeriskripti
-LINKERSCRIPT=linker.ld
-LINKER=avr-ld
-LINKERFLAGS=-T $(LINKERSCRIPT) -m $(TARGET_ARCH) -gc-sections
-
 ################################################################################
 # Tiedostot
 
 # Lista kaikesta C-lähdekoodista
-C_SOURCES := $(shell find $(KOODIKANSIO) -name '*.c')
-C_FILENAMES := $(notdir $(C_SOURCES))
+C_SOURCES := $(wildcard $(KOODIKANSIO)/*.c) $(wildcard $(KOODIKANSIO)/**/*.c)
 
 # Lista assembly-lähdekoodista
-S_SOURCES := $(shell find $(KOODIKANSIO) -name '*.S')
-S_FILENAMES := $(notdir $(S_SOURCES))
+# Jos toteutus molemmilla kielillä, Käytetään oletuksena C-toteutusta.
+# Filtteröidään siis assembly-listasta pois duppelit.
+S_SOURCES := $(wildcard $(KOODIKANSIO)/*.S) $(wildcard $(KOODIKANSIO)/**/*.S)
+S_SOURCES := $(filter-out $(C_SOURCES:%.c=%.S),$(S_SOURCES))
+
+# Aseta manuaalisesti nimenomaan assembly-versio käytettäväksi
+#S_FIXED := src/main.S
+
+ifneq ($(S_FIXED),)
+# Filtteröi valittujen assembly-toteutusten C-versiot pois
+S_SOURCES += $(S_FIXED)
+C_SOURCES := $(filter-out $(S_SOURCES:%.S=%.c),$(C_SOURCES))
+endif
+
 
 # Käännetyt versiot
-# C:stä käännetyt .c.o ja assemblystä .S.o ja näistä valkataan lopulta .o
-C_OBJECTS := $(addprefix $(KOHDEKANSIO)/,$(C_FILENAMES:%.c=%.c.o))
-S_OBJECTS := $(addprefix $(KOHDEKANSIO)/,$(S_FILENAMES:%.S=%.S.o))
+# C:stä käännetyt .c.o ja assemblystä .S.o
+C_OBJECTS := $(C_SOURCES:%.c=%.c.o)
+S_OBJECTS := $(S_SOURCES:%.S=%.S.o)
 
-# Jos tiedosto on olemassa pelkästään assembly- tai C-muodossa, käytetään sitä.
-# Jos molemmissa, käytetään oletuksena C-versiota, paitsi jos erikseen
-# speksattu että otetaan assembly-toteutus (ks. alempana esimerkki)
-O_OBJECTS_FROM_S_FILENAMES := $(filter-out $(C_FILENAMES:%.c=%.o),$(S_FILENAMES:%.S=%.o))
-
-# Erikseen speksattu olemaan assembly-koodista:
-O_OBJECTS_FROM_S_FILENAMES += main.o
-
-# Poista C-tiedostojen listasta asiat jotka speksattu olemaan assemblyversioita
-# ja assembly-listasta asiat jotka speksaamatta assemblyversioiksi.
-O_OBJECTS_FROM_C = $(addprefix $(KOHDEKANSIO)/,$(filter-out $(O_OBJECTS_FROM_S_FILENAMES),$(C_FILENAMES:%.c=%.o)))
-O_OBJECTS_FROM_S = $(addprefix $(KOHDEKANSIO)/,$(O_OBJECTS_FROM_S_FILENAMES))
-
+# Tiedostojen sisäiset riippuvuudet
+INT_DEPS_C := $(patsubst %.c.o,%.c.dep,$(C_OBJECTS))
+INT_DEPS_S := $(patsubst %.S.o,%.S.dep,$(S_OBJECTS))
+INT_DEPS := $(INT_DEPS_C) $(INT_DEPS_S)
 
 
 ################################################################################
-# Targettien toteutukset
+# Päätargetit
 
-all: $(KOHDEKANSIO) list newbin $(C_OBJECTS) $(S_OBJECTS) $(KOHDEBIN) $(LINKERSCRIPT) Makefile
+all: $(KOHDEKANSIO) $(KOHDEBIN) show Makefile
 build: all
 
-################################################################################
-# Kohdetiedostojen hallinta: putsaus- ja printtioperaatiot ymv
 
-
-# Build-kansion luonti jos uupuu
-$(KOHDEKANSIO):
-	mkdir $(KOHDEKANSIO)
-
-# Poista käännösbinääri, jos olemassa.
-# Linkataan joka kerta uudelleen.
-newbin: $(KOHDEKANSIO)
-ifneq ("$(wildcard $(KOHDEBIN))","")
-	rm $(KOHDEBIN)
-endif
-ifneq ("$(wildcard $(KOHDE_ELF))","")
-	rm $(KOHDE_ELF)
-endif
-
-# Poista väliaikatiedostot .o ja .elf
-clean:
-ifneq ("$(wildcard $(KOHDEKANSIO)/*.o)","")
-	@echo
-	@echo "Poistetaan .o"
-	rm $(KOHDEKANSIO)/*.o
-endif
-ifneq ("$(wildcard $(KOHDEKANSIO)/*.elf)","")
-	@echo
-	@echo "Poistetaan .elf"
-	rm $(KOHDEKANSIO)/*.elf
-endif
-
-# Poista kaikki kohdekansion sisältä
-clear: $(KOHDEKANSIO)
-ifneq ("$(wildcard $(KOHDEKANSIO)/*)","")
+# Näytä disassembly ja statsit
+show:
 	@echo 
-	@echo Tyhjätään $(KOHDEKANSIO)
-	rm $(wildcard $(KOHDEKANSIO)/*)
-else
-	@echo 
-	@echo $(KOHDEKANSIO) on jo tyhjä
-endif
-
-# Listaa tiedostot
-list:
-	@echo 
-	@echo C_SOURCES $(C_SOURCES)
-	@echo C_OBJECTS $(C_OBJECTS)
-	@echo S_SOURCES $(S_SOURCES)
-	@echo S_OBJECTS $(S_OBJECTS)
-	@echo O_OBJECTS_FROM_C $(O_OBJECTS_FROM_C)
-	@echo O_OBJECTS_FROM_S $(O_OBJECTS_FROM_S)
-
-# Näytä mitä tuli
-show: list
 	@test -f $(KOHDE_ELF) && (echo; echo ELF; avr-objdump -D -s $(KOHDE_ELF))
 	@test -f $(KOHDEBIN) && (echo; stat -c %.19y $(KOHDEBIN); echo BIN $(KOHDEBIN); od -A x -w16 --endian=big -t x1 $(KOHDEBIN))
 	@echo; stat -c "%s/$(ARCH_SIZE) tavua" $(KOHDEBIN)
+
 
 # Lähetä avrdudella laitteelle
 send: $(KOHDEBIN)
@@ -168,38 +131,82 @@ send: $(KOHDEBIN)
 
 
 ################################################################################
+# Aputargetit
+
+
+# Build-kansion luonti jos uupuu
+$(KOHDEKANSIO):
+	@mkdir $(KOHDEKANSIO)
+
+
+# Poista väliaikatiedostot .o ja .elf
+clean:
+	@echo
+	@echo "Siivotaan $(KOODIKANSIO)"
+	@rm -f $(KOODIKANSIO)/*.o
+	@rm -f $(KOODIKANSIO)/**/*.o
+	@rm -f $(KOODIKANSIO)/*.dep
+	@rm -f $(KOODIKANSIO)/**/*.dep
+	@echo
+	@echo "Siivotaan $(KOHDEKANSIO)"
+	@rm -f $(KOHDEKANSIO)/*.elf
+
+
+# Poista kaikki kohdekansion sisältä ja siivotaan koodikansio
+clear: $(KOHDEKANSIO) clean
+ifneq ("$(wildcard $(KOHDEKANSIO)/*)","")
+	@echo 
+	@echo Tyhjätään $(KOHDEKANSIO)
+	rm $(wildcard $(KOHDEKANSIO)/*)
+else
+	@echo 
+	@echo $(KOHDEKANSIO) on jo tyhjä
+endif
+
+
+# Listaa tiedostot (Makefile itsensä debuggaukseen)
+list:
+	@echo 
+	@echo C_SOURCES $(C_SOURCES)
+	@echo C_OBJECTS $(C_OBJECTS)
+	@echo S_SOURCES $(S_SOURCES)
+	@echo S_OBJECTS $(S_OBJECTS)
+	@echo O_OBJECTS_FROM_C $(O_OBJECTS_FROM_C)
+	@echo O_OBJECTS_FROM_S $(O_OBJECTS_FROM_S)
+	@echo INT_DEPS $(INT_DEPS)
+
+
+################################################################################
 # Koodin kääntö ja linkkaustargetit
 
 
 # Binäärin muodostus elffistä kopiointiohjelmalla
-$(KOHDEBIN): $(KOHDE_ELF)
+$(KOHDEBIN): $(KOHDE_ELF) Makefile
 	@echo 
 	$(BINCOPY) $(BINFLAGS) $(KOHDE_ELF) $(KOHDEBIN)
 
 # Linkkaa .o-tiedostot linkkeriskriptillä elffiksi.
 # O_OBJECTS_FROM_C ja O_OBJECTS_FROM_S sovelluskohtaisia.
-$(KOHDE_ELF): $(O_OBJECTS_FROM_C) $(O_OBJECTS_FROM_S) $(LIBS) $(LINKERSCRIPT)
+$(KOHDE_ELF): $(C_OBJECTS) $(S_OBJECTS) $(LIBS) $(LINKERSCRIPT) Makefile
+	@echo 
 	@echo Link ELF
-	@echo O_OBJECTS_FROM_C $(O_OBJECTS_FROM_C)
-	@echo O_OBJECTS_FROM_S $(O_OBJECTS_FROM_S)
-	$(LINKER) $(LINKERFLAGS) -o $(KOHDE_ELF) $(O_OBJECTS_FROM_C) $(O_OBJECTS_FROM_S) $(LIBS)
+	@echo O_OBJECTS_FROM_C $(C_OBJECTS)
+	@echo O_OBJECTS_FROM_S $(S_OBJECTS)
+	$(LINKER) $(LINKERFLAGS) -o $(KOHDE_ELF) $(C_OBJECTS) $(S_OBJECTS) $(LIBS)
 
-$(O_OBJECTS_FROM_C): $(C_OBJECTS) Makefile
+
+# .c.o-tiedostot C-koodista
+# Luodaan samalla riippuvuustiedostot .d
+%.c.o: %.c
 	@echo 
-	@echo C_OBJECTS $(C_OBJECTS)
-	test "$@" != "" && cp $(patsubst %.o,%.c.o,$@) $@
-$(O_OBJECTS_FROM_S): $(S_OBJECTS) Makefile
+	@echo Luodaan $@ tiedostosta $<
+	$(COMP_CC) $(COMPFLAGS_C) -MF $(@:%.c.o=%.c.dep) -o $@ $<
+# .S.o-tiedostot assemblykoodista
+%.S.o: %.S
 	@echo 
-	@echo S_OBJECTS $(S_OBJECTS)
-	test "$@" != "" && cp $(patsubst %.o,%.S.o,$@) $@
+	@echo Luodaan $@ tiedostosta $<
+	$(COMP_CC) $(COMPFLAGS_C) -MF $(@:%.S.o=%.S.dep) -o $@ $<
 
-# Pitää ottaa huomioon myös headerien muutos
-%.c: %.h
-%.S: %.h
 
-# Käännä kaikki .c-tiedostot .c.o-tiedostoiksi
-$(C_OBJECTS): $(C_SOURCES)
-	$(COMP_CC) $(COMPFLAGS_C) $(C_COMPILER_TARGET_FLAGS) -o $@ $(addprefix $(KOODIKANSIO)/,$(notdir $(patsubst %.c.o,%.c,$@)))
-# Käännä kaikki .S-tiedostot .S.o-tiedostoiksi
-$(S_OBJECTS): $(S_SOURCES)
-	$(COMP_AS) $(COMPFLAGS_AS) -o $@ $(addprefix $(KOODIKANSIO)/,$(notdir $(patsubst %.S.o,%.S,$@)))
+# Sisäiset riippuvuudet .d-tiedostoista (headerit ymv)
+-include $(INT_DEPS)

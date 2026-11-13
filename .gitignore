@@ -7,6 +7,8 @@ build_artifacts/
 *.obj
 *.bin
 *.elf
+*.o
+*.dep
 
 # PCB-designiin liittyvät turhakkeet
 PCB/*
